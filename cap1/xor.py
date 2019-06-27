@@ -4,39 +4,37 @@
 # @简介    : 
 # @File    : xor.py
 
-
+from network import NeuralNetwork
 import numpy as np
 
 
-def sigmoid(x):
-    return 1.0 / (1 + np.e ** -x)
+def get_training_data():
+    data_list = []
+    with open("./data/input.txt") as fp:
+        for line in fp:
+            items = map(int, line.strip('\n').split(','))
+            data_list.append(items)
+    return data_list
 
 
-def calc_error(X, T):
-    i = X
-    W0 = np.array([[0.6, 0.3], [0.4, 0.7]])
-    # print np.dot(W0, i)
-    h = sigmoid(np.dot(W0, i))
-    print h
-    W1 = np.array([[0.7, 0.3]])
-    o = sigmoid(np.dot(W1, h))
-    print o
-    e = (T - o) * (1 - o) * o
-    print 'e', e
-    learning_rate = 0.1
-    he = np.dot(e, W1)
-    print he
-    de = learning_rate * e
-    dh = de * W1
-    print dh
-    W1 += dh
-    # print sigmoid(np.dot(W1, h))
+def judge(x):
+    return 1 if x > .5 else 0
 
 
 def main():
-    X = np.array([[1, 0]]).transpose()
-    T = np.array([[1]])
-    calc_error(X, T)
+    i_num, h_num, o_num, learning_rate = 3, 5, 2, 0.1
+    nn = NeuralNetwork(i_num, h_num, o_num, learning_rate)
+    training_data = get_training_data()
+    vec = np.array(training_data)
+    q = vec[:, 0:i_num]
+    o = vec[:, i_num:].T
+    for i in range(10000):
+        for record in training_data:
+            input_list, target = record[0:i_num], [record[i_num:]]
+            nn.train(inputs_list=input_list, targets_list=target)
+        if i % 1000 == 0:
+            print i, nn.calc_loss(q, o)
+    print nn.query(q)
 
 
 main()
